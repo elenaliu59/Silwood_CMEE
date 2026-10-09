@@ -1,0 +1,15 @@
+#1 
+# wc -l ../data/fasta/407228326.fasta
+# wc -l ../data/fasta/407228412.fasta
+# The file counts are one lower than their displayed line counts because this commend counts newline characters, rather than displayed lines.
+# Since the two flies are not newline-terminated, they will have one less newline characters than the displayed line 
+
+#2
+# tail -n +2 ../data/fasta/e_coli.fasta 
+# The header is excluded because the commend skipped the first two lines, printing from the second line to the end of the file
+
+#3 tail -n +2 ../data/fasta/e_coli.fasta | tr -d "\n" | wc -m
+
+#4 tail -n +2 ../data/fasta/e_coli.fasta | tr -d "\n" | grep -o "ATGC" | wc -l
+
+#5 
