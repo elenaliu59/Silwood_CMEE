@@ -1,0 +1,5 @@
+*~
+*.tmp
+*.py[co]
+sandbox/
+class_note
