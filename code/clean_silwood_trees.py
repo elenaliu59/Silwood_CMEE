@@ -7,6 +7,9 @@ import csv
 from pathlib import Path
 from typing import Iterable
 
+# Import math module to use isfinite() function for checking if a number is finite
+import math
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 INPUT_PATH = PROJECT_ROOT / "data" / "silwood_trees_raw.csv"
@@ -109,11 +112,15 @@ def validate_record(
     else:
         # Check if distance_m is a valid number -> # Reference: https://www.reddit.com/r/learnpython/comments/dy8u90/anything_like_isdigit_that_would_work_for_floats/
         try: 
-            float(row["distance_m"]) 
+            distance_value = float(row["distance_m"])
+            # Check if value is finite and not NaN or infinity
+            if not math.isfinite(distance_value):
+                reasons.append("invalid distance_m")
             # Check if distance_m is within the valid range (0-100)
-            if float(row["distance_m"]) <= 0 or float(row["distance_m"]) > 100:
+            if distance_value <= 0 or distance_value > 100:
                 reasons.append("distance_m out of range")
         except ValueError:
+            # In case the value is not a number 
             reasons.append("invalid distance_m")
         
     # angle_degrees validation
@@ -123,11 +130,15 @@ def validate_record(
     else:
         # Check if angle_degrees is a valid number, is a digit will also be finite 
         try:
-            float(row["angle_degrees"]) 
+            angle_value = float(row["angle_degrees"])
+            # Check if value is finite and not NaN or infinity
+            if not math.isfinite(angle_value):
+                reasons.append("invalid angle_degrees")
             # Check if angle_degrees is within the valid range (0-90)
-            if float(row["angle_degrees"]) <= 0 or float(row["angle_degrees"]) >= 90:
+            if angle_value <= 0 or angle_value >= 90:
                 reasons.append("angle_degrees out of range")
         except ValueError:
+            # In case the value is not a number
             reasons.append("invalid angle_degrees")
 
     # Return the cleaned row if there are no reasons, otherwise return None and the list of reasons
