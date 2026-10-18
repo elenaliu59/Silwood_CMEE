@@ -106,29 +106,34 @@ def validate_record(
     # Check if distance_m is empty
     if row["distance_m"] == "":
         reasons.append("missing distance_m")
-    # Check if distance_m is a valid number -> # Reference: https://www.reddit.com/r/learnpython/comments/dy8u90/anything_like_isdigit_that_would_work_for_floats/
-    elif not row["distance_m"].replace(".", "", 1).isdigit() or not row["location"].isfinite(): 
-        reasons.append("invalid distance_m")
-    # Check if distance_m is within the valid range (0-100)
-    elif float(row["distance_m"]) <= 0 or float(row["distance_m"]) > 100:
-        reasons.append("distance_m out of range")
-
+    else:
+        # Check if distance_m is a valid number -> # Reference: https://www.reddit.com/r/learnpython/comments/dy8u90/anything_like_isdigit_that_would_work_for_floats/
+        try: 
+            float(row["distance_m"]) 
+            # Check if distance_m is within the valid range (0-100)
+            if float(row["distance_m"]) <= 0 or float(row["distance_m"]) > 100:
+                reasons.append("distance_m out of range")
+        except ValueError:
+            reasons.append("invalid distance_m")
+        
     # angle_degrees validation
     # Check if angle_degrees is empty
     if row["angle_degrees"] == "":
         reasons.append("missing angle_degrees")
-    # Check if angle_degrees is a valid number 
-    elif not row["angle_degrees"].replace(".", "", 1).isdigit() or not row["location"].isfinite():
-        reasons.append("invalid angle_degrees")
-    # Check if angle_degrees is within the valid range (0-90)
-    elif float(row["angle_degrees"]) <= 0 or float(row["angle_degrees"]) >= 90:
-        reasons.append("angle_degrees out of range")
+    else:
+        # Check if angle_degrees is a valid number, is a digit will also be finite 
+        try:
+            float(row["angle_degrees"]) 
+            # Check if angle_degrees is within the valid range (0-90)
+            if float(row["angle_degrees"]) <= 0 or float(row["angle_degrees"]) >= 90:
+                reasons.append("angle_degrees out of range")
+        except ValueError:
+            reasons.append("invalid angle_degrees")
 
     # Return the cleaned row if there are no reasons, otherwise return None and the list of reasons
     if reasons:
         return None, reasons
     else:
-        accepted_ids.add(row["record_id"])  # Add the record_id to the set of accepted IDs to prevent duplicates
         return row, []
 
 
@@ -138,16 +143,16 @@ def process_records(
     """Sort records into accepted rows and issue reports."""
     clean_rows: list[dict[str, str]] = []
     issue_rows: list[dict[str, str]] = []
-    source_row = 0  # Initialize source_row to keep track of the row number 
+    source_row = 1  # Initiate at header row and keep track of the row number 
     accepted_ids: set[str] = set()  # Set to keep track of accepted record to prevent duplicates
     
     # Validate each row and separate them into clean rows and issued rows
     for row in rows:
         source_row += 1 # Increment the source_row for each row processed & skipping the header
         clean_row, issue_row = validate_record(row, source_row, accepted_ids)
-        if clean_row is not None and clean_row["record_id"] not in accepted_ids:  # Check for duplicates
+        if clean_row is not None:  
             clean_rows.append(clean_row)
-            accepted_ids.add(clean_row["record_id"])  # Add the accepted record_id to the set
+            accepted_ids.add(row["record_id"])  # Add the record_id to the set of accepted IDs to prevent duplicates
         if issue_row:
             # Turn the list of reasons into a single string for the issue report
             issue_row = "; ".join(issue_row)
@@ -168,7 +173,8 @@ def summarise_oaks(clean_records: Iterable[dict[str, str]]) -> list[dict[str, st
             if species not in oak_counts:
                 oak_counts[species] = 0
             oak_counts[species] += 1
-    return [{"species": species, "count": count} for species, count in oak_counts.items()]
+
+    return [{"species": species, "count": count} for species, count in sorted(oak_counts.items())]
 
 def write_csv(
     path: Path,
