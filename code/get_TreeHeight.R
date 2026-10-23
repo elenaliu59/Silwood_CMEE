@@ -38,17 +38,22 @@ if (any(distance <= 0 | distance > 100) || any(angle <= 0 | angle >= 90)) {
 }
 
 # calculate tree height in meter 
-calculate_tree_height <- function(distance, angle) {
+TreeHeight <- function(distance, angle) {
   # convert angle from degrees to radians and calculate height
   distance * tan(angle * pi / 180)
 }
 
-tree_data$height_m <- calculate_tree_height(distance, angle)
+tree_data$height_m <- TreeHeight(distance, angle)
 
 # check the header of the data frame after adding the height column
 if (!identical(names(tree_data),
                c("Species", "Distance.m", "Angle.degrees", "height_m"))) {
   stop("HeaderError: height_m column is not added to the data frame.")
+}
+
+# create results directory if it doesn't exist 
+if (!dir.exists("results")) {
+  dir.create("results")
 }
 
 
